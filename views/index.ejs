@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title><%= title %></title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+  <script src='https://unpkg.com/axios/dist/axios.min.js'></script>
+
+  <script>
+    async function myFunction() {
+      const target = document.getElementById('city').value;
+
+
+      if (target) {
+        axios.get(`http://localhost:3000/city/${target}`).then((res) => {
+          let weatherInfo = extractWeatherInfo(res.data);
+          displayWeatherInfo(weatherInfo);
+        }).catch((err) => {
+          if (err.response) {
+            let errMsg = '';
+            switch (err.response.status) {
+              case 401:
+                errMsg = `Uh-oh! Seems like I've misplaced my access key to the weather provider`;
+                break;
+              case 404:
+                errMsg =
+                  `Uh-oh! Seems like we can't find the city you've asked for. It may be on our end but could you double check the spelling perhaps just to make sure?`;
+                break;
+              case 429:
+                errMsg =
+                  `Uh-oh! Seems like I've knocked at OpenWeatherMaps' door one too many time, wait a minute before making your request again, please.`;
+                break;
+            }
+            let alertMessage = `Error: ${err.response.status} - ${errMsg}`;
+            alert(alertMessage);
+          } else {
+            alert(
+              "This is genuinely embarassing but... Something terrible happened and I don't know what it was.");
+          }
+        });
+      } else {
+        alert("Please inform a city first");
+      }
+
+    }
+
+    function extractWeatherInfo(data) {
+      if (data) {
+        console.log(data);
+        return {
+          temp: `${data.main.temp} °C`,
+          temp_min: `${data.main.temp_min} °C`,
+          temp_max: `${data.main.temp_max} °C`,
+          description: `${data.weather[0].main} --> ${data.weather[0].description}`,
+          windSpeed: `${data.wind.speed} Km/h`
+        }
+      } else {
+        throw new Error(`Couldn't extract weather info`);
+      }
+    }
+
+    function displayWeatherInfo(info) {
+      console.log(info);
+      console.log(info.temp_min);
+      document.getElementById('temp').innerHTML = info.temp;
+      document.getElementById('temp_min').innerHTML = info.temp_min;
+      document.getElementById('temp_max').innerHTML = info.temp_max;
+      document.getElementById('description').innerHTML = info.description;
+      document.getElementById('windSpeed').innerHTML = info.windSpeed;
+    }
+  </script>
+
+</head>
+
+<body>
+  <h1 id='headerThing'><%= title %></h1>
+
+  <input type="text" id="city" placeholder="City Name"></text>
+  </br>
+  <button type="button" onclick="myFunction()">Check Weather</button>
+  </br></br>
+
+  <b>Temperature:</b> <label id="temp"></label></br>
+  <b>Min:</b> <label id="temp_min"></label></br>
+  <b>Max:</b> <label id="temp_max"></label></br>
+  <b>Condition:</b> <label id="description"></label></br>
+  <b>Wind Speed:</b> <label id="windSpeed" value="bob"></label></br>
+
+
+</body>
+
+</html>
